@@ -1,0 +1,53 @@
+{
+  "posts": [
+    {
+      "slug": "welcome-to-the-boostowl-blog",
+      "title": "Welcome to the BoostOwl blog",
+      "excerpt": "We're starting to write — about WhatsApp, Indian SMBs, and what it's like to build software for the way small businesses actually work.",
+      "date": "2026-05-10",
+      "author": {
+        "name": "Mayank",
+        "role": "Co-founder, BoostOwl"
+      },
+      "tags": ["Announcements", "Founder notes"],
+      "cover": {
+        "label": "Welcome.",
+        "color": "deep"
+      },
+      "readingTime": 3,
+      "featured": true
+    },
+    {
+      "slug": "apex-sports-ground-case-study",
+      "title": "How Apex Sports Ground runs its bookings on WhatsApp",
+      "excerpt": "Our first paying customer is a cricket ground in Hapur. Here's exactly how their day looks — and what we learned shipping a product into a real business.",
+      "date": "2026-05-04",
+      "author": {
+        "name": "Prateek",
+        "role": "Co-founder, BoostOwl"
+      },
+      "tags": ["Case studies"],
+      "cover": {
+        "label": "Apex Sports Ground",
+        "color": "forest"
+      },
+      "readingTime": 6
+    },
+    {
+      "slug": "whatsapp-business-api-explained",
+      "title": "The WhatsApp Business API, explained for Indian SMBs",
+      "excerpt": "What the WhatsApp Business API actually is, why it matters for small businesses, and the difference between service messages and marketing messages.",
+      "date": "2026-04-22",
+      "author": {
+        "name": "Mayank",
+        "role": "Co-founder, BoostOwl"
+      },
+      "tags": ["Guides", "WhatsApp"],
+      "cover": {
+        "label": "WhatsApp Business API",
+        "color": "mint"
+      },
+      "readingTime": 7
+    }
+  ]
+}
