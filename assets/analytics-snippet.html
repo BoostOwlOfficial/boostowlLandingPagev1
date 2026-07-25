@@ -1,0 +1,30 @@
+<!--
+  BoostOwl website analytics snippet — REFERENCE ONLY (this file is not served/loaded).
+
+  When you add a NEW HTML page to the site, paste the block below into its <head>,
+  right after the <meta name="viewport" ...> tag (before <title>), so analytics loads
+  on the new page too. The site has no shared header, so each page needs its own copy.
+
+  Tools:  Google Analytics 4  (ID: G-1V2XBVV7WB)
+          Microsoft Clarity   (project: xrwvfcen0b)
+
+  Pages that already have it: index.html, blog.html, post.html,
+  legal/privacy.html, legal/terms.html, legal/data-deletion.html
+-->
+
+<!-- Google Analytics 4 (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-1V2XBVV7WB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-1V2XBVV7WB');
+</script>
+<!-- Microsoft Clarity -->
+<script type="text/javascript">
+  (function(c,l,a,r,i,t,y){
+      c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+      t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+      y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+  })(window, document, "clarity", "script", "xrwvfcen0b");
+</script>
