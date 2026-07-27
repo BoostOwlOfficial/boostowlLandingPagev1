@@ -6,8 +6,8 @@
 (function(){
   'use strict';
 
-  const POSTS_JSON = 'posts/posts.json';
-  const MD_DIR     = 'posts/';
+  const POSTS_JSON = '/posts/posts.json';
+  const MD_DIR     = '/posts/';
 
   const $ = (s, r=document) => r.querySelector(s);
   const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
@@ -117,7 +117,7 @@
   }
 
   function featuredCardHtml(p){
-    const link = 'post.html?slug=' + encodeURIComponent(p.slug);
+    const link = postUrl(p.slug);
     return `
       <a href="${link}" class="cover" aria-label="${escapeHtml(p.title)}">${coverHtml(p)}</a>
       <div class="body">
@@ -139,7 +139,7 @@
   }
 
   function cardHtml(p){
-    const link = 'post.html?slug=' + encodeURIComponent(p.slug);
+    const link = postUrl(p.slug);
     return `
       <article class="post-card">
         <a href="${link}" class="cover" aria-label="${escapeHtml(p.title)}">${coverHtml(p)}</a>
@@ -159,13 +159,26 @@
     `;
   }
 
+  // ---- URL helpers ----
+  // Posts are served at /blog/<slug> by api/post.js (see vercel.json rewrites),
+  // which injects the real <title>/OG tags server-side so crawlers and social
+  // scrapers see them. post.html?slug=<slug> still works for older links.
+  function postUrl(slug){
+    return '/blog/' + encodeURIComponent(slug);
+  }
+
+  function currentSlug(){
+    const m = location.pathname.match(/^\/blog\/([^/]+)\/?$/);
+    if (m) return decodeURIComponent(m[1]);
+    return new URLSearchParams(location.search).get('slug');
+  }
+
   // ---- SINGLE POST (post.html?slug=foo) ----
   async function renderPost(){
     const mount = $('#post-mount');
     if (!mount) return;
 
-    const params = new URLSearchParams(location.search);
-    const slug = params.get('slug');
+    const slug = currentSlug();
     if (!slug){
       mount.innerHTML = stateBlock('No post selected',
         'Looks like you came here without a slug. <a href="blog.html">Back to all posts</a>.');

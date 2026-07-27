@@ -2,11 +2,13 @@
   "functions": {
     "api/privacy.js": { "includeFiles": "legal/**" },
     "api/data-deletion.js": { "includeFiles": "legal/**" },
-    "api/terms.js": { "includeFiles": "legal/**" }
+    "api/terms.js": { "includeFiles": "legal/**" },
+    "api/post.js": { "includeFiles": "{post.html,posts/**}" }
   },
   "rewrites": [
     { "source": "/privacy.html", "destination": "/api/privacy" },
     { "source": "/data-deletion.html", "destination": "/api/data-deletion" },
-    { "source": "/terms.html", "destination": "/api/terms" }
+    { "source": "/terms.html", "destination": "/api/terms" },
+    { "source": "/blog/:slug", "destination": "/api/post?slug=:slug" }
   ]
 }
