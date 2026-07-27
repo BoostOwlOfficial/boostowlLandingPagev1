@@ -1,15 +1,15 @@
 <!--
-  BoostOwl website analytics snippet — REFERENCE ONLY (this file is not served/loaded).
+  BoostOwl — standard <head> block. REFERENCE ONLY (this file is never served or loaded).
 
-  When you add a NEW HTML page to the site, paste the block below into its <head>,
-  right after the <meta name="viewport" ...> tag (before <title>), so analytics loads
-  on the new page too. The site has no shared header, so each page needs its own copy.
+  The site has no shared header or template, so EVERY new page needs its own copy.
+  Paste the block below into the page's <head>, right after <meta name="viewport" ...>
+  and before <title>. Without it the page is untracked and shows no favicon.
 
-  Tools:  Google Analytics 4  (ID: G-1V2XBVV7WB)
-          Microsoft Clarity   (project: xrwvfcen0b)
+  Then add the new URL to /sitemap.xml.
 
-  Pages that already have it: index.html, blog.html, post.html,
-  legal/privacy.html, legal/terms.html, legal/data-deletion.html
+  Analytics:  Google Analytics 4 (G-1V2XBVV7WB) + Microsoft Clarity (xrwvfcen0b)
+  Pages that already have it: index.html, blog.html, post.html, 404.html,
+                              legal/privacy.html, legal/terms.html, legal/data-deletion.html
 -->
 
 <!-- Google Analytics 4 (gtag.js) -->
@@ -28,3 +28,24 @@
       y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
   })(window, document, "clarity", "script", "xrwvfcen0b");
 </script>
+
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#04302E">
+
+<!--
+  Also add per-page, with ABSOLUTE URLs (relative URLs break link previews):
+
+  <link rel="canonical" href="https://www.boostowl.io/YOUR-PAGE.html" />
+  <meta property="og:site_name" content="BoostOwl" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.boostowl.io/YOUR-PAGE.html" />
+  <meta property="og:title" content="..." />
+  <meta property="og:description" content="..." />
+  <meta property="og:image" content="https://www.boostowl.io/assets/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+-->

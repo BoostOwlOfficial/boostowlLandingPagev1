@@ -72,6 +72,7 @@ button{ font:inherit; cursor:pointer; }
 }
 .brand-mark{ width:32px; height:32px; flex:none; }
 .brand-text{ line-height:1; }
+.brand-logo{ height:30px; width:auto; flex:none; display:block; }
 
 .nav-links{
   display:flex; align-items:center; gap:32px;

@@ -1,0 +1,14 @@
+{
+  "name": "BoostOwl",
+  "short_name": "BoostOwl",
+  "description": "The operating system for SMBs, delivered through WhatsApp.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FBF8F1",
+  "theme_color": "#04302E",
+  "icons": [
+    { "src": "/icon-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512" },
+    { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512", "purpose": "maskable" }
+  ]
+}

@@ -213,7 +213,7 @@
       publisher: {
         '@type': 'Organization',
         name: 'BoostOwl',
-        logo: { '@type': 'ImageObject', url: location.origin + '/assets/logo.png' }
+        logo: { '@type': 'ImageObject', url: location.origin + '/icon-512.png' }
       },
       url: location.href
     };
