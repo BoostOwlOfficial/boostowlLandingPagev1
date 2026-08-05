@@ -38,6 +38,14 @@ const ALLOWED_PAYLOAD_KEYS = new Set([
   'linkedin_url', 'portfolio_url', 'github_url', 'why_boostowl',
   'custom_answers', 'resume', 'consent', 'form_token', 'turnstile_token',
   'hp_subject', 'utm_source',
+
+  // LEGACY, accepted but never read. `hp_company` was the honeypot until
+  // Chrome started autofilling it (it matches the "organization" category) and
+  // silently binned real applications. Assets are browser-cached for hours, so
+  // for a while after a deploy some visitors still post the old key. Accepting
+  // and ignoring it lets those submissions through; rejecting it turned a
+  // stale cache into a dead end. apply.js reads hp_subject only.
+  'hp_company',
 ]);
 
 // ---------------------------------------------------------------------------
@@ -367,9 +375,23 @@ function validateApplication(payload, job, config) {
   const clean = {};
 
   // Strict schema — unknown keys are a hard reject.
+  //
+  // The key is named in the response AND the log. It used to be anonymous,
+  // which made a real incident undiagnosable: a browser holding a cached
+  // older careers.js posted a field this build had renamed, and the only
+  // clue anyone got was "Unexpected field in the form".
+  //
+  // Naming it leaks nothing — the allowlist is derivable from the page source.
   for (const key of Object.keys(payload)) {
     if (!ALLOWED_PAYLOAD_KEYS.has(key)) {
-      return { ok: false, errors: { _form: 'Unexpected field in the form. Please reload and try again.' } };
+      console.warn(`[validate] unexpected payload key "${key}" — client/server version skew?`);
+      return {
+        ok: false,
+        errors: {
+          _form: `This form is out of date (unexpected field "${key}"). ` +
+                 'Please reload the page — Ctrl+Shift+R, or Cmd+Shift+R on a Mac — and submit again.',
+        },
+      };
     }
   }
 

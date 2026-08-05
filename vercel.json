@@ -12,6 +12,20 @@
     { "source": "/blog/:slug", "destination": "/api/post?slug=:slug" },
     { "source": "/careers", "destination": "/careers.html" }
   ],
+  "headers": [
+    {
+      "source": "/assets/careers.js",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
+    },
+    {
+      "source": "/assets/careers-md.js",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
+    },
+    {
+      "source": "/assets/careers.css",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
+    }
+  ],
   "crons": [
     { "path": "/api/careers/cron/daily", "schedule": "0 3 * * *" }
   ]

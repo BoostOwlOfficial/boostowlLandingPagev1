@@ -1348,7 +1348,10 @@
           try { window.turnstile.reset(state.turnstile.widgetId); } catch (e) { /* ignore */ }
         }
         state.turnstile.token = null;
-        return showFormNotice('error', 'We could not complete the human check. If you use an ad blocker or a VPN, try disabling it, then submit again.');
+        // Lead with the fix that works most often. Blaming an ad blocker first
+        // is unhelpful to the majority who are not running one, and it reads as
+        // an accusation while telling them nothing actionable.
+        return showFormNotice('error', 'The human check did not go through. The check below has been reset — please try again. If it keeps failing, reload the page, or disable an ad blocker or VPN if you use one.');
 
       case 'JOB_FULL':
       case 'JOB_CLOSED':
