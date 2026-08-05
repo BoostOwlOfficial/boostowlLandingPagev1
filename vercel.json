@@ -9,6 +9,10 @@
     { "source": "/privacy.html", "destination": "/api/privacy" },
     { "source": "/data-deletion.html", "destination": "/api/data-deletion" },
     { "source": "/terms.html", "destination": "/api/terms" },
-    { "source": "/blog/:slug", "destination": "/api/post?slug=:slug" }
+    { "source": "/blog/:slug", "destination": "/api/post?slug=:slug" },
+    { "source": "/careers", "destination": "/careers.html" }
+  ],
+  "crons": [
+    { "path": "/api/careers/cron/daily", "schedule": "0 3 * * *" }
   ]
 }

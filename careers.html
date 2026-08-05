@@ -12,14 +12,13 @@
   gtag('js', new Date());
   gtag('config', 'G-1V2XBVV7WB');
 </script>
-<!-- Microsoft Clarity -->
-<script type="text/javascript">
-  (function(c,l,a,r,i,t,y){
-      c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-      t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-      y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-  })(window, document, "clarity", "script", "xrwvfcen0b");
-</script>
+<!--
+  Microsoft Clarity is deliberately OMITTED on this page only.
+  Clarity records DOM changes and interactions; this page collects names,
+  email addresses, phone numbers and resumes. Sending that to a third-party
+  session recorder is not covered by our privacy policy. GA4 stays because it
+  records page views, not field contents. See CAREERS-ADMIN.md.
+-->
 
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
@@ -27,30 +26,47 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#04302E">
 
-<title>User Data Deletion — BoostOwl</title>
-<meta name="description" content="How to request deletion of your BoostOwl account and associated data." />
-<link rel="canonical" href="https://www.boostowl.io/data-deletion.html" />
-<meta property="fb:app_id" content="2074250006740949" />
+<title>Careers — BoostOwl</title>
+<meta name="description" content="Build the operating system for 60 million Indian SMBs. Open roles in engineering, design, sales and operations at BoostOwl — a DPIIT-recognised startup running businesses through WhatsApp." />
+<link rel="canonical" href="https://www.boostowl.io/careers" />
 <meta property="og:site_name" content="BoostOwl" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://www.boostowl.io/data-deletion.html" />
-<meta property="og:title" content="User Data Deletion — BoostOwl" />
-<meta property="og:description" content="How to request deletion of your BoostOwl account and associated data." />
+<meta property="og:url" content="https://www.boostowl.io/careers" />
+<meta property="og:title" content="Careers — BoostOwl" />
+<meta property="og:description" content="Build the operating system for 60 million Indian SMBs. Open roles in engineering, design, sales and operations." />
 <meta property="og:image" content="https://www.boostowl.io/assets/og-image.png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
+<meta property="og:locale" content="en_IN" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="User Data Deletion — BoostOwl" />
-<meta name="twitter:description" content="How to request deletion of your BoostOwl account and associated data." />
+<meta name="twitter:site" content="@boostowlio" />
+<meta name="twitter:title" content="Careers — BoostOwl" />
+<meta name="twitter:description" content="Build the operating system for 60 million Indian SMBs." />
 <meta name="twitter:image" content="https://www.boostowl.io/assets/og-image.png" />
+
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
 <link href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&display=swap" rel="stylesheet" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="assets/legal.css" />
+
+<!-- Only used when Turnstile is enabled; the script itself is injected by careers.js -->
+<link rel="preconnect" href="https://challenges.cloudflare.com" />
+
+<!-- Root-absolute: this page is served at BOTH /careers and /careers.html, so a
+     relative href would break under the trailing-slash form. -->
+<link rel="stylesheet" href="/assets/careers.css" />
+
+<noscript>
+  <style>
+    .js-only{ display:none !important; }
+    .noscript-only{ display:block !important; }
+  </style>
+</noscript>
 </head>
 <body>
+
+<a href="#careers-root" class="skip-link">Skip to content</a>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
@@ -70,9 +86,6 @@
     </symbol>
     <symbol id="i-whatsapp" viewBox="0 0 24 24" fill="currentColor">
       <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.92.51 3.78 1.49 5.43L2 22l4.79-1.57a9.86 9.86 0 0 0 5.25 1.5h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.02A9.84 9.84 0 0 0 12.04 2zm0 18.13h-.01a8.21 8.21 0 0 1-4.19-1.15l-.3-.18-3.13 1.03 1.04-3.05-.2-.31a8.21 8.21 0 0 1-1.26-4.36c0-4.54 3.7-8.23 8.24-8.23 2.2 0 4.27.86 5.82 2.41a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.69 8.22-8.22 8.22zm4.52-6.16c-.25-.13-1.47-.72-1.7-.8-.23-.08-.39-.13-.56.13-.16.25-.65.8-.79.97-.15.16-.29.18-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.16-.25.25-.41.08-.16.04-.31-.02-.43-.06-.13-.56-1.34-.76-1.84-.2-.49-.4-.42-.56-.43-.14-.01-.31-.01-.48-.01-.16 0-.43.06-.66.31-.23.25-.86.84-.86 2.06 0 1.21.88 2.38 1 2.55.12.16 1.73 2.64 4.18 3.7.58.25 1.04.4 1.4.51.59.19 1.12.16 1.55.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.18-.48-.31z"/>
-    </symbol>
-    <symbol id="i-arrow-l" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M19 12H5M11 6l-6 6 6 6"/>
     </symbol>
     <symbol id="i-twitter" viewBox="0 0 24 24" fill="currentColor">
       <path d="M18.244 2H21.5l-7.5 8.57L23 22h-6.804l-5.328-6.97L4.8 22H1.54l8.034-9.18L1 2h6.96l4.82 6.37L18.244 2zm-1.193 18h1.832L7.04 4H5.105L17.05 20z"/>
@@ -109,72 +122,221 @@
     <symbol id="i-threads" viewBox="0 0 24 24" fill="currentColor">
       <path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.5 12.01v-.017c.001-3.576.851-6.43 2.495-8.481C5.845 1.205 8.598.024 12.179 0h.014c2.746.019 5.043.724 6.826 2.098 1.677 1.291 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.615 12c.001 3.086.692 5.496 2.028 7.164 1.43 1.781 3.631 2.695 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.963-.065-1.19.408-2.285 1.33-3.082.88-.76 2.119-1.207 3.583-1.291.99-.057 1.918-.013 2.774.13-.116-.687-.349-1.232-.696-1.625-.478-.541-1.216-.817-2.192-.823h-.028c-.784 0-1.848.215-2.526 1.225l-1.703-1.14c.908-1.352 2.383-2.096 4.229-2.096h.043c3.085.019 4.923 1.912 5.106 5.212.105.044.208.09.31.138 1.44.677 2.494 1.702 3.049 2.963.772 1.756.843 4.619-1.482 6.895-1.777 1.74-3.935 2.523-6.985 2.545zm1.03-13.005c-.222 0-.448.007-.678.02-1.837.103-2.98.946-2.916 2.143.067 1.256 1.452 1.839 2.784 1.767 1.224-.065 2.818-.543 3.086-3.71-.4-.087-.836-.15-1.303-.18-.322-.024-.646-.04-.973-.04z"/>
     </symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <path d="M17 8l-5-5-5 5"/>
+      <path d="M12 3v13"/>
+    </symbol>
+    <symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <path d="M14 2v6h6"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 6L9 17l-5-5"/>
+    </symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+      <path d="M12 9v4"/>
+      <path d="M12 17h.01"/>
+    </symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12h14"/>
+      <path d="M13 6l6 6-6 6"/>
+    </symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 9l6 6 6-6"/>
+    </symbol>
   </defs>
 </svg>
 
 <nav class="nav">
   <div class="wrap nav-inner">
-    <a href="index.html" class="brand" aria-label="BoostOwl home">
+    <a href="/index.html" class="brand" aria-label="BoostOwl home">
       <svg class="brand-logo" viewBox="0 0 812 151" role="img" aria-label="BoostOwl"><use href="#i-logo"/></svg>
     </a>
     <div class="nav-links">
-      <a href="index.html#modules">Platform</a>
-      <a href="index.html#how-it-works">How it works</a>
-      <a href="index.html#architecture">Architecture</a>
-      <a href="index.html#pricing">Pricing</a>
-      <a href="blog.html">Blog</a>
-      <a href="/careers">Careers</a>
+      <a href="/index.html#modules">Platform</a>
+      <a href="/index.html#how-it-works">How it works</a>
+      <a href="/index.html#architecture">Architecture</a>
+      <a href="/index.html#pricing">Pricing</a>
+      <a href="/blog.html">Blog</a>
+      <a href="/careers" class="current" aria-current="page">Careers</a>
     </div>
-    <a class="nav-cta" href="index.html#wa">
+    <a class="nav-cta" href="/index.html#wa">
       <svg width="16" height="16" aria-hidden="true"><use href="#i-whatsapp"/></svg>
       Talk to us
     </a>
   </div>
 </nav>
 
-<main class="doc">
-  <div class="wrap-doc">
-
-    <a class="back-home" href="index.html">
-      <svg width="14" height="14" aria-hidden="true"><use href="#i-arrow-l"/></svg>
-      Back to home
-    </a>
-
-    <header class="doc-head">
-      <span class="doc-eyebrow">Legal</span>
-      <h1>User Data Deletion Instructions</h1>
-      <p class="doc-meta">Last updated: May 2026</p>
-    </header>
-
-    <h2>1. Introduction</h2>
-    <p>According to the Facebook Platform rules, we have to provide <strong>User Data Deletion Callback URL</strong> or <strong>Data Deletion Instructions URL</strong>. If you want to delete your activities for the BoostOwl App, you can follow these instructions to initiate a data deletion request.</p>
-
-    <h2>2. How to Request Data Deletion</h2>
-    <p>If you wish to delete your account and all associated data from BoostOwl, you can do so by contacting our support team. We value your privacy and rights to your data.</p>
-    <p>To request data deletion, please follow these steps:</p>
-    <ol>
-      <li>Send an email to our Data Protection Officer at <strong><a href="mailto:support@boostowl.io">support@boostowl.io</a></strong>.</li>
-      <li>Use the subject line "<strong>Data Deletion Request</strong>".</li>
-      <li>In the body of the email, please include your registered email address and clearly state that you would like your account and personal data to be deleted.</li>
-    </ol>
-
-    <h2>3. What Happens Next?</h2>
-    <p>Upon receiving your request, our team will:</p>
-    <ul>
-      <li>Verify your identity to ensure the safety of your data.</li>
-      <li>Process your deletion request within 30 days.</li>
-      <li>Notify you via email once your data has been permanently removed from our systems.</li>
-    </ul>
-    <p>Please note that some data may be retained for legal or regulatory purposes as required by law.</p>
-
-    <h2>4. Contact Us</h2>
-    <div class="doc-contact">
-      <h3>Need help?</h3>
-      <p>If you have any trouble with these steps or have questions regarding your data privacy, please don't hesitate to reach out to us at <a href="mailto:support@boostowl.io">support@boostowl.io</a>.</p>
-      <p>Administrative: <a href="mailto:admin@boostowl.io">admin@boostowl.io</a></p>
+<!-- ===================================================================
+     Hero. The copy below duplicates config.careers_page in Supabase so
+     crawlers and no-JS visitors see real content; careers.js overwrites
+     it once the API responds. Keep the two in sync or the swap flashes.
+     =================================================================== -->
+<header class="careers-hero">
+  <div class="wrap careers-hero-inner">
+    <div class="hero-copy" id="hero-mount">
+      <span class="eyebrow">Careers at BoostOwl</span>
+      <h1>Build the OS for 60 million Indian SMBs</h1>
+      <p>Small DPIIT-recognised team. Real users, real revenue, a lot still to build.</p>
     </div>
-
+    <div class="hero-stats" id="hero-stats"></div>
   </div>
+</header>
+
+<main id="careers-root" tabindex="-1">
+
+  <noscript>
+    <div class="wrap">
+      <div class="state-block noscript-only">
+        <h3>This page needs JavaScript</h3>
+        <p>Our open roles and the application form are loaded dynamically. If you cannot enable
+           JavaScript, email <a href="mailto:careers@boostowl.io">careers@boostowl.io</a> with the
+           role you are interested in and your CV, and we will take it from there.</p>
+      </div>
+    </div>
+  </noscript>
+
+  <!-- ===================================================================
+       WORK BAND (mint). All three views live here and swap in place, so
+       the band keeps its colour through list -> detail -> apply.
+       =================================================================== -->
+  <section class="work-band">
+    <div class="wrap">
+
+      <!-- ---------------- list ---------------- -->
+      <div id="roles-section">
+        <div class="roles-head">
+          <div class="dept-bar js-only" id="dept-bar" role="group" aria-label="Filter roles by team"></div>
+          <span class="role-count" id="role-count"></span>
+        </div>
+        <p id="list-status" class="sr-only" role="status" aria-live="polite"></p>
+
+        <div class="job-grid" id="job-list">
+          <div class="state-block js-only" style="grid-column:1/-1">
+            <div class="spinner"></div>
+            <p>Loading open roles&hellip;</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---------------- detail ---------------- -->
+      <div id="detail-section" hidden>
+        <button type="button" class="back-link" id="back-to-roles">
+          <svg width="15" height="15" aria-hidden="true"><use href="#i-chevron"/></svg>All roles
+        </button>
+
+        <div class="split-cols">
+          <div class="panel detail-main" id="detail-mount"></div>
+
+          <aside class="rail">
+            <div class="panel apply-card" id="apply-intro">
+              <h3>Apply in one screen</h3>
+              <p class="apply-card-sub">Three steps, about ten minutes. Nothing is asked twice.</p>
+              <ol class="step-preview" id="step-preview"></ol>
+              <button type="button" class="btn btn-primary btn-block" id="start-apply">
+                Start application <svg width="16" height="16" aria-hidden="true"><use href="#i-arrow"/></svg>
+              </button>
+              <p class="apply-card-foot">A human reads every application. You hear back within five working days.</p>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <!-- ---------------- apply ---------------- -->
+      <div id="apply-section" hidden>
+        <button type="button" class="back-link" id="back-to-detail">
+          <svg width="15" height="15" aria-hidden="true"><use href="#i-chevron"/></svg>Back to the role
+        </button>
+
+        <div class="split-cols" id="wizard">
+          <div class="panel wizard-main">
+            <div class="wizard-progress" aria-hidden="true"><span id="progress-bar"></span></div>
+            <div class="wizard-body">
+              <div class="wizard-head">
+                <h2 id="step-title" tabindex="-1">About you</h2>
+                <span class="step-counter" id="step-counter">Step 1 of 3</span>
+              </div>
+
+              <form id="apply-form" novalidate autocomplete="on">
+                <div class="notice" id="form-notice" hidden></div>
+                <div class="error-summary" id="error-summary" role="alert" tabindex="-1" hidden></div>
+
+                <!-- one mount per step; only the active one is shown -->
+                <div class="step-body" id="step-1"></div>
+                <div class="step-body" id="step-2" hidden></div>
+                <div class="step-body" id="step-3" hidden></div>
+
+                <!-- static: Turnstile must survive step changes -->
+                <div class="form-foot">
+                  <div class="honeypot" aria-hidden="true">
+                    <label for="hp_company">Company</label>
+                    <input type="text" id="hp_company" name="hp_company" tabindex="-1" autocomplete="off" />
+                  </div>
+                  <div class="ts-mount" id="ts-mount"></div>
+
+                  <div class="wizard-nav">
+                    <button type="button" class="btn btn-ghost" id="step-back" hidden>
+                      <svg width="15" height="15" aria-hidden="true"><use href="#i-chevron"/></svg>Back
+                    </button>
+                    <span class="step-hint" id="step-hint"></span>
+                    <button type="submit" class="btn btn-primary" id="submit-btn">Continue</button>
+                  </div>
+                  <p class="status-line" id="submit-status" role="status" aria-live="polite" aria-atomic="true"></p>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <aside class="rail">
+            <div class="applying-card" id="applying-card"></div>
+            <div class="panel tracker-card">
+              <ol class="tracker" id="tracker"></ol>
+              <p class="tracker-foot">Nothing is submitted until the last step. We never ask for your current salary.</p>
+            </div>
+          </aside>
+        </div>
+
+        <div class="success-panel" id="success-panel" hidden tabindex="-1"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       CLOSING BAND (paper): value cards, then "How we hire" beside
+       "Before you apply". One band, two columns — per the design.
+       =================================================================== -->
+  <section class="closing-band" id="closing-band" hidden>
+    <div class="wrap">
+      <div class="value-grid" id="why-mount"></div>
+
+      <div class="closing-cols">
+        <div class="closing-col">
+          <div class="closing-head">
+            <h3>How we hire</h3>
+            <span id="process-note">The middle stage depends on the role.</span>
+          </div>
+          <div class="process-table" id="process-mount"></div>
+          <ul class="principles" id="principles-mount"></ul>
+        </div>
+
+        <div class="closing-col">
+          <h3 class="closing-title">Before you apply</h3>
+          <div class="faq-list" id="faq-mount"></div>
+          <div class="faq-note" id="open-note" hidden></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="closed-band" id="closed-state" hidden>
+    <div class="wrap wrap-narrow">
+      <div class="state-block" id="closed-mount"></div>
+    </div>
+  </section>
+
 </main>
 
 <footer>
@@ -198,27 +360,27 @@
       <div class="foot-col">
         <h4>Product</h4>
         <ul>
-          <li><a href="index.html#modules">Platform</a></li>
-          <li><a href="index.html#how-it-works">How it works</a></li>
-          <li><a href="index.html#architecture">Architecture</a></li>
-          <li><a href="index.html#pricing">Pricing</a></li>
-          <li><a href="blog.html">Blog</a></li>
+          <li><a href="/index.html#modules">Platform</a></li>
+          <li><a href="/index.html#how-it-works">How it works</a></li>
+          <li><a href="/index.html#architecture">Architecture</a></li>
+          <li><a href="/index.html#pricing">Pricing</a></li>
+          <li><a href="/blog.html">Blog</a></li>
         </ul>
       </div>
       <div class="foot-col">
         <h4>Company</h4>
         <ul>
           <li><a href="/careers">Careers</a></li>
-          <li><a href="privacy.html">Privacy Policy</a></li>
-          <li><a href="terms.html">Terms of Usage</a></li>
-          <li><a href="data-deletion.html">Data Deletion</a></li>
+          <li><a href="/privacy.html">Privacy Policy</a></li>
+          <li><a href="/terms.html">Terms of Usage</a></li>
+          <li><a href="/data-deletion.html">Data Deletion</a></li>
         </ul>
       </div>
       <div class="foot-col">
         <h4>Contact</h4>
         <ul>
+          <li><a href="mailto:careers@boostowl.io">careers@boostowl.io</a></li>
           <li><a href="mailto:support@boostowl.io">support@boostowl.io</a></li>
-          <li><a href="mailto:admin@boostowl.io">admin@boostowl.io</a></li>
         </ul>
       </div>
     </div>
@@ -235,5 +397,7 @@
   </div>
 </footer>
 
+<script src="/assets/careers-md.js"></script>
+<script src="/assets/careers.js"></script>
 </body>
 </html>

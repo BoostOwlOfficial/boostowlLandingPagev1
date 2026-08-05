@@ -1,0 +1,44 @@
+# ============================================================================
+# Files listed here are NEVER uploaded to Vercel, so they can never be served.
+#
+# Verified 2026-08-05: Vercel serves any non-code repo file as a static asset.
+# BLOG-README.md was live at https://www.boostowl.io/BLOG-README.md before this
+# file existed. Anything internal must be listed here.
+#
+# ⚠️ BEFORE ADDING A LINE, READ THIS
+# A serverless function can only bundle files that were uploaded. Three
+# functions depend on `includeFiles` in vercel.json:
+#
+#   api/terms.js · api/privacy.js · api/data-deletion.js  →  legal/**
+#   api/post.js                                           →  post.html, posts/**
+#
+# Ignoring legal/, post.html, or posts/ would break the Meta / WhatsApp
+# scraper fix. See PROTECTED-ROUTES.md. Never add a broad pattern like `*.md`
+# — it would swallow posts/*.md and break the blog.
+# ============================================================================
+
+# Internal documentation ------------------------------------------------------
+README.md
+BLOG-README.md
+CAREERS-ADMIN.md
+PROTECTED-ROUTES.md
+
+# Database migrations — must never be publicly readable -----------------------
+db/
+
+# Local tooling ---------------------------------------------------------------
+scripts/
+
+# Secrets (belt and braces; .gitignore already covers these) ------------------
+.env
+.env.*
+
+# Editor / OS noise -----------------------------------------------------------
+.DS_Store
+.idea/
+*.swp
+
+# Optional: 13 work-in-progress screenshots, ~1 MB, referenced only by
+# README.md. Currently public at /uploads/*. Left deployed on purpose — the
+# URLs may have been shared externally. Uncomment only if you are sure.
+# uploads/

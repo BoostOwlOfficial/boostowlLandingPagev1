@@ -1,0 +1,23 @@
+# Secrets — never commit these.
+# All keys live in Vercel → Settings → Environment Variables. See CAREERS-ADMIN.md §2.5
+.env
+.env.*
+!.env.example
+
+# Vercel
+.vercel
+
+# Dependencies (the project is dependency-free today; this is a guard for later)
+node_modules/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.env*
+
+# ...but keep the template committed. This negation MUST stay below `.env*`:
+# in .gitignore the LAST matching rule wins, so an earlier `!` would be
+# overridden. .env.example holds no secrets and is the setup reference.
+!.env.example
