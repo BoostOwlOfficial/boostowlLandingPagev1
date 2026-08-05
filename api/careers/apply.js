@@ -348,10 +348,16 @@ module.exports = async (req, res) => {
         subject: mail.subject,
         html: mail.html,
       });
+      // A failed inline send must land on 'pending', NOT 'failed'.
+      // cron/notify.js only ever selects notify_status='pending', and it owns
+      // the escalation to 'failed' after MAX_ATTEMPTS. Writing 'failed' here
+      // skipped the retry ladder entirely: a transient Resend outage — or an
+      // unverified sending domain — permanently buried the alert, and the
+      // application sat unread with notify_attempts still at 0.
       await update(
         'applications',
         { id: `eq.${applicationId}` },
-        { notify_status: sent.ok ? 'sent' : 'failed' }
+        { notify_status: sent.ok ? 'sent' : 'pending' }
       ).catch(() => {});
       if (!sent.ok) console.error('[apply] alert email failed:', sent.reason);
     } catch (err) {
