@@ -201,13 +201,34 @@ async function signResumeUrl(path, expiresInSeconds = 300, timeoutMs = 8000) {
   return `${baseUrl()}/storage/v1${body.signedURL}`;
 }
 
-async function deleteResume(path, timeoutMs = 8000) {
+/**
+ * Delete one or more resume objects. THROWS on failure — a silent false here
+ * meant the retention purge dropped the database row while the PDF stayed in
+ * the bucket forever, which is the opposite of what the consent text promises.
+ *
+ * Uses the BULK endpoint (`DELETE /object/<bucket>` + {prefixes}). The
+ * per-object form (`DELETE /object/<bucket>/<path>`) cannot be used with our
+ * shared headers(): those set Content-Type: application/json, and Supabase
+ * Storage rejects a JSON content-type with an empty body:
+ *   400 "Body cannot be empty when content-type is set to 'application/json'"
+ */
+async function deleteResume(paths, timeoutMs = 8000) {
+  const list = (Array.isArray(paths) ? paths : [paths]).filter(Boolean);
+  if (!list.length) return 0;
+
   return withTimeout(async (signal) => {
-    const resp = await fetch(
-      `${baseUrl()}/storage/v1/object/${RESUME_BUCKET}/${encodeURI(path)}`,
-      { method: 'DELETE', headers: headers(), signal }
-    );
-    return resp.ok;
+    const resp = await fetch(`${baseUrl()}/storage/v1/object/${RESUME_BUCKET}`, {
+      method: 'DELETE',
+      headers: headers(),
+      body: JSON.stringify({ prefixes: list }),
+      signal,
+    });
+    if (!resp.ok) {
+      const text = await resp.text();
+      throw new Error(`storage delete failed: ${resp.status} ${text.slice(0, 200)}`);
+    }
+    const removed = await resp.json();
+    return Array.isArray(removed) ? removed.length : list.length;
   }, timeoutMs, 'storage delete');
 }
 

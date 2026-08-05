@@ -270,9 +270,18 @@
 
                 <!-- static: Turnstile must survive step changes -->
                 <div class="form-foot">
+                  <!-- Honeypot. The field name must stay OUTSIDE every browser
+                       autofill category (name/email/phone/address/organization/
+                       cc). It was `hp_company` with a "Company" label, which
+                       Chrome autofilled from the saved address profile on real
+                       applications - `autocomplete="off"` is ignored for
+                       address-type fields - and every such application was
+                       silently discarded. Do not rename this to anything a
+                       browser might recognise. -->
                   <div class="honeypot" aria-hidden="true">
-                    <label for="hp_company">Company</label>
-                    <input type="text" id="hp_company" name="hp_company" tabindex="-1" autocomplete="off" />
+                    <label for="hp_subject">Subject</label>
+                    <input type="text" id="hp_subject" name="hp_subject" tabindex="-1"
+                           autocomplete="new-password" />
                   </div>
                   <div class="ts-mount" id="ts-mount"></div>
 

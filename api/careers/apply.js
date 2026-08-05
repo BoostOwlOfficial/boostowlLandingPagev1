@@ -99,7 +99,7 @@ module.exports = async (req, res) => {
 
   // ---- 4. Honeypot -------------------------------------------------------
   // A bot that fills the hidden field gets a clean 200 and learns nothing.
-  if (typeof payload.hp_company === 'string' && payload.hp_company.trim() !== '') {
+  if (typeof payload.hp_subject === 'string' && payload.hp_subject.trim() !== '') {
     console.warn('[apply] honeypot triggered');
     return ok(req, res, { reference: 'BO-000000', message: 'Application received.' });
   }

@@ -72,6 +72,7 @@
     autoRetried: false,
     submitted: null,
     lastFocused: null,
+    hpTouched: false,  // did a human ever focus the honeypot? see buildPayload()
   };
 
   /* =====================================================================
@@ -1213,7 +1214,13 @@
       custom_answers: state.answers,
       consent: f.consent === true,
       form_token: state.data.form_token,
-      hp_company: $('#hp_company') ? $('#hp_company').value : '',
+      // Only forward a honeypot value a human actually put there. Chrome
+      // autofill fires a trusted `input` event but never FOCUSES the field it
+      // fills, so focus is the reliable discriminator. A bot driving a real
+      // browser must focus to type, and a bot POSTing directly never runs this
+      // code at all - the server check still catches it. This exists because
+      // autofill silently binned real applications.
+      hp_subject: state.hpTouched && $('#hp_subject') ? $('#hp_subject').value : '',
     };
 
     // Optional keys are omitted rather than sent empty — the server rejects
@@ -1499,9 +1506,20 @@
     // Delegated form input. One listener for the whole regenerated subtree.
     const form = $('#apply-form');
 
+    // Focus is what separates a human from autofill here: a person must focus
+    // the field to type in it, whereas Chrome fills an address group without
+    // ever focusing its members. Only a focused honeypot counts as a bot.
+    const hp = $('#hp_subject');
+    if (hp) {
+      const touch = () => { state.hpTouched = true; };
+      hp.addEventListener('focus', touch);
+      hp.addEventListener('keydown', touch);
+      hp.addEventListener('paste', touch);
+    }
+
     form.addEventListener('input', (e) => {
       const el = e.target;
-      if (el.id === 'hp_company') return;
+      if (el.id === 'hp_subject') return;
       captureValue(el);
       updateCounters();
       if (state.dirty.has(el.id)) revalidateField(el);
@@ -1509,7 +1527,7 @@
 
     form.addEventListener('change', (e) => {
       const el = e.target;
-      if (el.id === 'hp_company') return;
+      if (el.id === 'hp_subject') return;
       if (el.type === 'file') { onFilePick(el.files && el.files[0]); return; }
       captureValue(el);
       state.dirty.add(el.id);
@@ -1518,7 +1536,7 @@
 
     form.addEventListener('blur', (e) => {
       const el = e.target;
-      if (!el.id || el.id === 'hp_company') return;
+      if (!el.id || el.id === 'hp_subject') return;
       state.dirty.add(el.id);
       revalidateField(el);
     }, true);

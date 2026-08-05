@@ -37,7 +37,7 @@ const ALLOWED_PAYLOAD_KEYS = new Set([
   'experience_bucket', 'notice_period', 'expected_ctc_band', 'source',
   'linkedin_url', 'portfolio_url', 'github_url', 'why_boostowl',
   'custom_answers', 'resume', 'consent', 'form_token', 'turnstile_token',
-  'hp_company', 'utm_source',
+  'hp_subject', 'utm_source',
 ]);
 
 // ---------------------------------------------------------------------------

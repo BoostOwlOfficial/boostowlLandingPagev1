@@ -134,6 +134,13 @@ const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/sit
  *
  * @returns {{ok: true} | {ok: false, reason: string, unreachable?: boolean}}
  */
+// https://developers.cloudflare.com/turnstile/troubleshooting/testing/
+const CF_TEST_SECRETS = new Set([
+  '1x0000000000000000000000000000000AA', // always passes
+  '2x0000000000000000000000000000000AA', // always fails
+  '3x0000000000000000000000000000000AA', // token already spent
+]);
+
 async function verifyTurnstile(token, remoteIp, allowedHostnames) {
   const secret = process.env.TURNSTILE_SECRET_KEY;
   if (!secret) return { ok: false, reason: 'NOT_CONFIGURED' };
@@ -167,12 +174,21 @@ async function verifyTurnstile(token, remoteIp, allowedHostnames) {
     return { ok: false, reason: codes.join(',') || 'REJECTED' };
   }
 
-  if (Array.isArray(allowedHostnames) && allowedHostnames.length && data.hostname) {
+  // Cloudflare's published dummy secrets always verify but report
+  // hostname "example.com", so the assertion below can never pass with them
+  // and no application can be completed on localhost. Skipping the check for
+  // those three specific keys cannot weaken production: they are documented
+  // public constants, so anyone using one has no bot protection to weaken.
+  if (!CF_TEST_SECRETS.has(secret) &&
+      Array.isArray(allowedHostnames) && allowedHostnames.length && data.hostname) {
     const host = String(data.hostname).toLowerCase();
     const permitted = allowedHostnames.some(
       (h) => host === h || host.endsWith(`.${h}`)
     );
     if (!permitted) return { ok: false, reason: `HOSTNAME_MISMATCH:${host}` };
+  }
+  if (CF_TEST_SECRETS.has(secret)) {
+    console.warn('[security] Turnstile TEST secret in use — hostname check skipped. Never ship this key.');
   }
 
   return { ok: true };

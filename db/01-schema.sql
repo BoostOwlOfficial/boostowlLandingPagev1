@@ -4,6 +4,10 @@
 -- Docs: CAREERS-ADMIN.md
 -- ============================================================================
 
+-- Nothing here depends on pgcrypto: gen_random_uuid() is core Postgres 13+.
+-- Kept because Supabase projects normally have it, but never call a pgcrypto
+-- function from a `search_path = public` SECURITY DEFINER routine — Supabase
+-- installs the extension into `extensions`, so it will not resolve at runtime.
 create extension if not exists pgcrypto;
 
 -- ---------------------------------------------------------------------------

@@ -56,13 +56,21 @@ async function runMaintenance(config) {
     const purged = await rpc('purge_expired_applications', { p_days: config.retention_days });
     result.purged = (purged || []).length;
 
-    for (const row of purged || []) {
-      if (!row.resume_path) continue;
+    // One bulk call, and the count comes from what storage actually removed —
+    // never from how many we asked it to remove. A file left behind after its
+    // row is gone is an undeletable orphan, so it has to raise an alert.
+    const paths = (purged || []).map((r) => r.resume_path).filter(Boolean);
+    if (paths.length) {
       try {
-        await deleteResume(row.resume_path);
-        result.resumesDeleted++;
+        result.resumesDeleted = await deleteResume(paths);
+        if (result.resumesDeleted < paths.length) {
+          const msg = `retention: ${paths.length - result.resumesDeleted} resume file(s) survived their purged row`;
+          console.error('[maintenance]', msg);
+          result.alerts.push(msg);
+        }
       } catch (err) {
-        console.warn('[maintenance] could not delete', row.resume_path, err.message);
+        console.error('[maintenance] resume purge FAILED:', err.message);
+        result.alerts.push('resume purge failed (files retained past policy): ' + err.message);
       }
     }
     if (result.purged) console.log(`[maintenance] purged ${result.purged} applications past ${config.retention_days} days`);

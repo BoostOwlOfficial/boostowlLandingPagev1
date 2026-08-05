@@ -58,7 +58,12 @@ begin
     return jsonb_build_object('ok', false, 'error', 'JOB_FULL');
   end if;
 
-  v_ref := 'BO-' || upper(encode(gen_random_bytes(4), 'hex'));
+  -- gen_random_uuid() is CORE Postgres (13+). Do NOT use gen_random_bytes()
+  -- here: that lives in pgcrypto, which Supabase installs into the
+  -- `extensions` schema, and this function pins `search_path = public` — so
+  -- the call fails at RUNTIME with 42883 while CREATE FUNCTION succeeds.
+  -- Same shape and entropy as gen_random_bytes(4): 8 hex chars, 32 bits.
+  v_ref := 'BO-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8));
 
   insert into applications (
     reference, job_id, job_slug,
