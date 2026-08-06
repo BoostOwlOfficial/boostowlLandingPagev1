@@ -551,14 +551,27 @@
 
   /* --- Field builders --------------------------------------------------- */
 
-  function fieldHtml({ id, label, required, help, control }) {
+  /**
+   * @param helpAfter  render the hint BELOW the control instead of above it.
+   *   Required for any field sharing a .field-row: the row is a 1fr 1fr grid, so
+   *   a hint above the input pushes that column's control down and the two
+   *   inputs stop lining up. Keeping label and control as the first two
+   *   children in both columns is what makes them align. The design does the
+   *   same thing for Phone. Hints are announced via aria-describedby, so DOM
+   *   order costs nothing for screen readers.
+   */
+  function fieldHtml({ id, label, required, help, control, helpAfter }) {
+    const hint = help
+      ? `<p class="help" id="${escapeHtml(id)}-help">${escapeHtml(help)}</p>`
+      : '';
     return `
       <div class="field" data-field="${escapeHtml(id)}">
         <label class="label" for="${escapeHtml(id)}">
           ${escapeHtml(label)}${required ? '<span class="req" aria-hidden="true">*</span><span class="sr-only">required</span>' : ''}
         </label>
-        ${help ? `<p class="help" id="${escapeHtml(id)}-help">${escapeHtml(help)}</p>` : ''}
+        ${helpAfter ? '' : hint}
         ${control}
+        ${helpAfter ? hint : ''}
         <div class="error-slot" id="${escapeHtml(id)}-err"></div>
       </div>`;
   }
@@ -681,8 +694,8 @@
           control: `<input type="email" class="control" id="email" autocomplete="email" maxlength="254" placeholder="you@example.com" value="${escapeHtml(f.email || '')}">` })}
       </div>
       <div class="field-row">
-        ${fieldHtml({ id: 'phone', label: 'Phone', required: true, help: 'We use WhatsApp for scheduling.',
-          control: `<input type="tel" class="control" id="phone" autocomplete="tel" maxlength="20" placeholder="+91 98765 43210" value="${escapeHtml(f.phone || '')}">` })}
+        ${fieldHtml({ id: 'phone', label: 'Phone', required: true, help: 'We use WhatsApp for scheduling.', helpAfter: true,
+          control: `<input type="tel" class="control" id="phone" autocomplete="tel" maxlength="20" placeholder="+91 98765 43210" aria-describedby="phone-help" value="${escapeHtml(f.phone || '')}">` })}
         ${fieldHtml({ id: 'location_city', label: 'Current city', required: true,
           control: `<input type="text" class="control" id="location_city" autocomplete="address-level2" maxlength="60" placeholder="Delhi NCR" value="${escapeHtml(f.location_city || '')}">` })}
       </div>`;

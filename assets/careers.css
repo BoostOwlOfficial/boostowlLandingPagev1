@@ -82,7 +82,6 @@
 
 [hidden]{ display:none !important; }
 
-   ===================================================================== */
 *,*::before,*::after{ box-sizing:border-box; }
 html,body{ margin:0; padding:0; }
 html{ scroll-behavior:smooth; }
@@ -762,7 +761,13 @@ footer{
   font-weight:600; color: var(--muted); margin: 0 0 16px;
 }
 
-.field{ display:grid; gap:6px; margin-bottom:16px; }
+/* align-content:start is load-bearing. .field-row stretches both columns to
+   the taller one's height, and a grid container with auto rows distributes
+   that extra height ACROSS its rows. The two columns rarely have the same
+   number of rows — one may carry a hint or an error — so the inputs drifted
+   out of line by exactly the height of whatever the other column lacked.
+   Pinning the rows to the top keeps label and control on the same baseline. */
+.field{ display:grid; gap:6px; margin-bottom:16px; align-content:start; }
 .field-row{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
 
 .label{ font-size:14px; font-weight:600; color: var(--ink); }
