@@ -18,7 +18,12 @@ function escapeHtml(s) {
     .replace(/'/g, '&#39;');
 }
 
-async function sendEmail({ to, from, subject, html, replyTo }, timeoutMs = 8000) {
+// Resend caps a whole message at 40 MB. Our resume ceiling is 2.5 MB, which is
+// ~3.4 MB base64 — comfortably inside it. This guard exists so a future ceiling
+// change cannot silently start producing rejected sends.
+const MAX_ATTACHMENT_BYTES = 20 * 1024 * 1024;
+
+async function sendEmail({ to, from, subject, html, replyTo, attachments }, timeoutMs = 15000) {
   const key = process.env.RESEND_API_KEY;
   if (!key) return { ok: false, reason: 'NOT_CONFIGURED' };
 
@@ -27,6 +32,25 @@ async function sendEmail({ to, from, subject, html, replyTo }, timeoutMs = 8000)
   try {
     const body = { from, to: Array.isArray(to) ? to : [to], subject, html };
     if (replyTo) body.reply_to = replyTo;
+
+    // Attachments are best-effort: a resume too large to send must never stop
+    // the alert itself, or a big CV would mean nobody hears about the candidate.
+    if (Array.isArray(attachments) && attachments.length) {
+      const usable = attachments.filter((a) => {
+        if (!a || !a.content || !a.filename) return false;
+        if (a.content.length > MAX_ATTACHMENT_BYTES) {
+          console.warn(`[email] attachment ${a.filename} too large (${a.content.length} bytes) — sending without it`);
+          return false;
+        }
+        return true;
+      });
+      if (usable.length) {
+        body.attachments = usable.map((a) => ({
+          filename: a.filename,
+          content: Buffer.isBuffer(a.content) ? a.content.toString('base64') : String(a.content),
+        }));
+      }
+    }
 
     const resp = await fetch(RESEND_URL, {
       method: 'POST',
@@ -46,8 +70,84 @@ async function sendEmail({ to, from, subject, html, replyTo }, timeoutMs = 8000)
   }
 }
 
+// ---------------------------------------------------------------------------
+// Config-driven templates.
+//
+// The TEMPLATE comes from an admin and may contain HTML on purpose. The VALUES
+// come from applicants and are always escaped, so a candidate cannot inject
+// markup by typing it into a form field.
+//
+// Substitution is a single pass: an inserted value is never rescanned, so
+// someone typing "{{email}}" into a text box gets those literal characters.
+// An unknown placeholder renders as empty rather than leaving "{{foo}}" in the
+// message a candidate reads.
+// ---------------------------------------------------------------------------
+
+/** Placeholders available to both templates. Keep CAREERS-ADMIN.md in sync. */
+const TEMPLATE_VARS = [
+  'reference', 'job_title', 'job_slug', 'full_name', 'first_name', 'email',
+  'phone', 'location_city', 'experience_bucket', 'notice_period',
+  'expected_ctc_band', 'linkedin_url', 'portfolio_url', 'github_url', 'source',
+  'why_boostowl', 'resume_status', 'custom_answers', 'next_step', 'applied_on',
+];
+
+function templateVars(app, job, config) {
+  const answers = Object.entries(app.custom_answers || {})
+    .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : String(v)}`)
+    .join('\n');
+
+  const steps = Array.isArray(config.hiring_process) ? config.hiring_process : [];
+  const next = steps.find((x) => x && x.step === 2);
+
+  return {
+    reference: app.reference,
+    job_title: job.title,
+    job_slug: job.slug,
+    full_name: app.full_name,
+    first_name: String(app.full_name || '').split(' ')[0],
+    email: app.email,
+    phone: app.phone_e164,
+    location_city: app.location_city,
+    experience_bucket: app.experience_bucket,
+    notice_period: app.notice_period,
+    expected_ctc_band: app.expected_ctc_band,
+    linkedin_url: app.linkedin_url,
+    portfolio_url: app.portfolio_url,
+    github_url: app.github_url,
+    source: app.source,
+    why_boostowl: app.why_boostowl,
+    resume_status: app.resume_status,
+    custom_answers: answers,
+    next_step: next ? `${next.detail}${next.timing ? ` (${next.timing})` : ''}` : '',
+    applied_on: new Date().toISOString().slice(0, 10),
+  };
+}
+
+/** `{{key}}` -> escaped value. Returns null for a blank template. */
+function renderTemplate(tpl, vars) {
+  if (typeof tpl !== 'string' || !tpl.trim()) return null;
+  return tpl.replace(/\{\{\s*([a-z0-9_]+)\s*\}\}/gi, (_m, key) => {
+    const v = vars[key];
+    if (v === undefined) {
+      console.warn(`[email] unknown template placeholder {{${key}}}`);
+      return '';
+    }
+    return escapeHtml(v);
+  });
+}
+
 /** New-application alert to the hiring inbox. */
 function buildApplicationAlert(app, job, config) {
+  const vars = templateVars(app, job, config);
+  const customHtml = renderTemplate(config.email_alert_html, vars);
+  if (customHtml) {
+    return {
+      subject: renderTemplate(config.email_alert_subject, vars)
+               || `New application: ${job.title} — ${app.full_name}`,
+      html: customHtml,
+    };
+  }
+
   const row = (label, value) =>
     value ? `<tr><td style="padding:4px 12px 4px 0;color:#557876;white-space:nowrap">${escapeHtml(label)}</td>
              <td style="padding:4px 0"><strong>${escapeHtml(value)}</strong></td></tr>` : '';
@@ -88,6 +188,16 @@ function buildApplicationAlert(app, job, config) {
 
 /** Optional acknowledgement to the candidate. */
 function buildCandidateAck(app, job, config) {
+  const vars = templateVars(app, job, config);
+  const customHtml = renderTemplate(config.email_ack_html, vars);
+  if (customHtml) {
+    return {
+      subject: renderTemplate(config.email_ack_subject, vars)
+               || `We received your application — ${job.title} at BoostOwl`,
+      html: customHtml,
+    };
+  }
+
   const steps = Array.isArray(config.hiring_process) ? config.hiring_process : [];
   const next = steps.find((s) => s && s.step === 2);
 
@@ -101,7 +211,6 @@ function buildCandidateAck(app, job, config) {
         Your reference is <strong>${escapeHtml(app.reference)}</strong>. Quote it if you need to reach us.
       </p>
       ${next ? `<p><strong>What happens next:</strong> ${escapeHtml(next.detail)} ${escapeHtml(next.timing ? `(${next.timing})` : '')}</p>` : ''}
-      <p>If you need your data removed at any point, reply to this email and we will delete it.</p>
       <p style="margin-top:28px">— The BoostOwl team</p>
       <p style="color:#8FB3B0;font-size:12px;margin-top:24px">
         BoostOwl Pvt. Ltd. · Hapur, Uttar Pradesh, India<br/>
@@ -111,4 +220,7 @@ function buildCandidateAck(app, job, config) {
   };
 }
 
-module.exports = { sendEmail, buildApplicationAlert, buildCandidateAck, escapeHtml };
+module.exports = {
+  sendEmail, buildApplicationAlert, buildCandidateAck, escapeHtml,
+  renderTemplate, templateVars, TEMPLATE_VARS, MAX_ATTACHMENT_BYTES,
+};

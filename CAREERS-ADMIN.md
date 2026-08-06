@@ -511,6 +511,15 @@ Set `is_open = false`, or set `closes_at` to auto-close on a date. Independent o
 2. `jobs.ai_enabled` → `true` on each role you want scored
 3. Applications already received? `select backfill_ai_queue('the-slug');`
 
+Steps 1 and 2 only affect applications that arrive **from now on**. `ai_status` is
+stamped once, at insert, so everything already in the table stays `'skipped'`.
+
+**Nothing ever backfills automatically.** No cron calls `backfill_ai_queue()` —
+not `daily`, not `score`, not `maintenance` — and no application code calls it.
+Flipping the master switch will never silently spend money on your history. Step 3
+is the only way to score older applications, and it is always a deliberate act.
+See §10 "Operational contracts" for the full semantics.
+
 ### Turn AI off
 `config.ai_scoring_enabled` → `false`. Stops in-flight scoring within one cron cycle.
 Applications continue completely unaffected.
@@ -735,6 +744,272 @@ someone else. Not building one is a legitimate security decision.
 | **Application detail** | Everything, resume viewer via signed URL, AI verdict rendered as strengths / concerns / red flags, status changer, notes, event timeline |
 | **Config** | Grouped by section, typed inputs, **ceiling shown next to each limit**, confirmation on master switches |
 | **Ops** | Trip the kill switch · manage blocklists · trigger backfill · view cron history · storage and budget usage |
+
+### Operational contracts the portal must implement
+
+Everything below is the behaviour of the system as built. A portal is a UI over
+these; it does not get to invent different semantics.
+
+---
+
+#### A. AI scoring — three independent switches, and backfill is MANUAL
+
+There is no single "AI on" control. Three things decide whether an application
+gets scored, and they are evaluated at different times:
+
+| # | Switch | Where | Evaluated |
+|---|---|---|---|
+| 1 | `config.ai_scoring_enabled` | `config` table (master) | at **insert**, and again by the score cron |
+| 2 | `jobs.ai_enabled` | per role | at **insert** |
+| 3 | `applications.ai_status` | per application | set once, at **insert** |
+
+At insert, `apply_to_job()` stamps `ai_status = 'pending'` only when **1 AND 2**
+are both true. Otherwise it stamps `'skipped'` — permanently, for that row.
+
+**Turning the master switch on does NOT reach backwards.** Nothing rescans old
+rows. `'skipped'` never becomes `'pending'` on its own. This is deliberate: a
+master switch that silently re-queued every historical application would spend
+real money the moment someone flipped a toggle, with no preview of the bill.
+
+`backfill_ai_queue()` is the ONLY thing that promotes `'skipped'` to `'pending'`,
+and **nothing calls it automatically** — not the daily cron, not `score`, not
+`maintenance`, no application code anywhere. It runs only when a human runs it.
+Keep it that way; the portal must expose it as an explicit, confirmed action and
+must never call it as a side effect of saving a job or flipping the master.
+
+```sql
+select backfill_ai_queue('backend-engineer');  -- one role, returns rows re-queued
+select backfill_ai_queue();                    -- EVERY ai_enabled role
+```
+
+It only touches rows where `ai_status = 'skipped'` **and** the job's
+`ai_enabled = true`. Rows already `pending`, `done` or `failed` are untouched, so
+it is safe to re-run.
+
+**UI requirements**
+
+- Backfill is a button, never an automatic consequence of another action.
+- Show the affected count **before** committing. `select count(*) from applications a
+  join jobs j on j.id = a.job_id where j.ai_enabled and a.ai_status = 'skipped'
+  and (j.slug = $1 or $1 is null)` — then confirm.
+- Show the estimated cost: `count × (ai_price_in_per_mtok, ai_price_out_per_mtok)`.
+  Resumes are sent to the model when `ai_include_resume_pdf = true`, which
+  dominates token count.
+- The no-argument form hits every role. Make that a separate, harder confirmation.
+- Backfill only queues. Scoring happens on the next `score` run, bounded by
+  `ai_daily_cap` and `ai_monthly_budget_usd`. Queueing 500 does not spend 500 at once.
+
+---
+
+#### B. Manual cron triggers
+
+All four are plain HTTP endpoints. Vercel Cron calls `daily` on a schedule; the
+other three exist to be run by hand.
+
+```
+GET /api/careers/cron/daily        maintenance -> notify -> score, in that order
+GET /api/careers/cron/maintenance  keepalive, retention purge, stale-queue expiry, usage
+GET /api/careers/cron/notify       retries applications with notify_status='pending'
+GET /api/careers/cron/score        claims a batch and scores it
+```
+
+**Auth:** `Authorization: Bearer $CRON_SECRET` on every one. No secret, wrong
+secret, or secret in the query string → `401`. The portal must call these
+**server-side** — `CRON_SECRET` must never reach a browser.
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" \
+     https://www.boostowl.io/api/careers/cron/notify
+```
+
+Each returns a JSON summary; surface it verbatim rather than a green tick:
+
+```json
+{"ok": true,
+ "maintenance": {"keepalive": true, "purged": 0, "resumesDeleted": 0,
+                 "storageBytes": 4911, "alerts": []},
+ "notify":      {"pending": 1, "sent": 1, "failed": 0},
+ "score":       {"scanned": 0, "scored": 0, "failed": 0, "spentUsd": 0,
+                 "provider": "anthropic:claude-haiku-4-5"}}
+```
+
+Safety notes for the UI:
+
+- **All four are idempotent and safe to re-run.** `score` leases rows
+  (`claim_ai_batch` uses `FOR UPDATE SKIP LOCKED`), so two concurrent runs will
+  not double-score. Still, disable the button while one is in flight.
+- **`maintenance` deletes data.** The retention purge removes applications past
+  `retention_days` and their resume files. It is not reversible. Label it plainly.
+- `daily` is the only one Vercel schedules. **Vercel Hobby allows one cron per
+  day** — adding a second schedule, or a more frequent one, fails the deployment.
+  That is why `daily` fans out to the other three instead of each having its own.
+- `alerts` in the maintenance response is the field worth alarming on. A
+  non-empty `alerts` means something needs a human — most importantly a resume
+  file that outlived its purged row.
+
+---
+
+#### C. Editing `config`
+
+`config` is a key/value table read through `get_config()`. Values are `jsonb`, so
+a boolean is `true` and not `'true'`.
+
+**Propagation:** the API caches config **in memory for 60 seconds**
+(`CACHE_TTL_MS`). An edit is live within a minute with no deploy. The portal
+should say "live within 60s", not "saved", so nobody edits twice thinking it failed.
+
+**Ceilings are enforced in code, not in the database.** `_lib/config.js` clamps
+every numeric value after reading it. A row may hold a larger number; the API
+will ignore it and log a warning. The portal must show the ceiling next to the
+input and refuse to save above it — otherwise an admin sets `resume_max_bytes` to
+100 MB, sees it saved, and believes it.
+
+| Key | Ceiling | Floor |
+|---|---|---|
+| `resume_max_bytes` | 2 621 440 (2.5 MB) | — |
+| `rate_limit_ip_hour` / `_day` / `_week` | 20 / 50 / 100 | — |
+| `rate_limit_email_30d` / `_phone_30d` | 20 / 20 | — |
+| `global_cap_hour` / `global_cap_day` | 500 / 2000 | — |
+| `ai_daily_cap` | 500 | — |
+| `ai_monthly_budget_usd` | 50 | — |
+| `ai_batch_size` / `ai_max_attempts` | 25 / 5 | — |
+| `retention_days` | 3650 | **30** |
+| `storage_soft_limit_bytes` | 5 GiB | — |
+| `min_form_dwell_seconds` | — | **2** |
+
+⚠️ `resume_max_bytes` cannot exceed 2.5 MB because the PDF travels base64-encoded
+inside the JSON body and base64 inflates by 4/3; the request ceiling is 4 MB.
+Raising it past the clamp produces uploads that are physically unsendable.
+
+**Keys that need a confirmation step**, because they change behaviour globally:
+
+- `applications_open` — `false` takes the whole careers page offline
+- `turnstile_enabled` — `false` disables bot protection entirely
+- `turnstile_fail_open` — `true` accepts applications when Cloudflare is
+  unreachable. Outage-only; the portal should nag until it is back to `false`
+- `ai_scoring_enabled` — the AI master
+- `retention_days` — lowering it makes the **next** maintenance run delete data
+  permanently. Show how many rows the new value would destroy, before saving
+- `consent_version` — only bump when the consent text materially changes;
+  it is stamped onto each application as the legal record of what was agreed
+
+**Five keys can be overridden by environment variables**, and the env wins:
+`ai_provider`, `ai_model`, `ai_base_url`, `ai_price_in_per_mtok`,
+`ai_price_out_per_mtok`. If one is set in Vercel, editing the config row does
+nothing and the UI will appear broken. The portal should read
+`readEnvOverrides()` and mark those fields read-only with an explanation.
+
+`ai_scoring_enabled` is deliberately **not** env-overridable — one source of truth.
+
+---
+
+#### C2. Email templates and CV attachment
+
+Both emails are editable from `config` — no deploy. The portal should offer a
+textarea (or a rich editor emitting HTML) plus a live preview.
+
+| Key | Type | Meaning |
+|---|---|---|
+| `email_alert_subject` | string | Subject of the internal new-application alert |
+| `email_alert_html` | string | HTML body of that alert |
+| `email_ack_subject` | string | Subject of the candidate acknowledgement |
+| `email_ack_html` | string | HTML body of that acknowledgement |
+| `email_attach_resume` | boolean | Attach the CV to the internal alert |
+
+**Blank means "use the built-in".** An empty string is not an empty email — it
+falls back to the default template in `_lib/email.js`. So clearing a bad template
+is always a safe recovery, and the portal should say so next to the field.
+
+The candidate acknowledgement is only sent when `notify_ack_candidate` is `true`;
+editing `email_ack_html` alone does not start sending it.
+
+**Placeholders** — `{{name}}`, case-insensitive, whitespace tolerated:
+
+```
+{{reference}}  {{job_title}}  {{job_slug}}  {{full_name}}  {{first_name}}
+{{email}}      {{phone}}      {{location_city}}  {{experience_bucket}}
+{{notice_period}}  {{expected_ctc_band}}  {{linkedin_url}}  {{portfolio_url}}
+{{github_url}}  {{source}}  {{why_boostowl}}  {{resume_status}}
+{{custom_answers}}  {{next_step}}  {{applied_on}}
+```
+
+`{{custom_answers}}` renders as `key: value` lines. `{{next_step}}` is step 2 of
+`hiring_process` with its timing. An unknown placeholder renders as **empty** and
+logs a warning — it never leaks `{{typo}}` into a candidate's inbox. The portal
+should validate against this list on save and show the offender.
+
+**The escaping model, which the portal must not undo:**
+
+- The **template** is admin-authored and rendered as HTML on purpose — that is
+  the point of the feature.
+- Every **substituted value** is HTML-escaped. A candidate typing
+  `<script>alert(1)</script>` into "why this role" arrives as inert text.
+- Substitution is a single pass, so a value containing `{{email}}` stays literal
+  and cannot reach another field's data.
+
+Because the template is live HTML, **treat template editing as an admin-only
+permission**. A `recruiter` who can edit `email_ack_html` can put anything into a
+message that goes out under your domain.
+
+**CV attachment (`email_attach_resume`)**
+
+Off by default, and that default is deliberate. Turning it on:
+
+- Attaches the PDF to the internal alert only — never to the candidate email.
+- Costs nothing on the request path: `apply.js` still has the buffer in memory
+  from the upload step.
+- On a cron retry the file is re-fetched from storage; if that fetch fails the
+  alert is still sent, just without the attachment.
+- Is skipped unless `resume_status = 'ok'`, so you are never sent a file that
+  failed to store.
+- Drops attachments over 20 MB rather than failing the send (Resend's own
+  message ceiling is 40 MB; our resume ceiling is 2.5 MB, so this is a guard for
+  a future config change, not a limit you will meet).
+
+⚠️ **Privacy consequence, worth a confirmation dialog.** An attached CV is a
+second copy of applicant PII living in a mailbox. `purge_expired_applications()`
+deletes from Postgres and Storage — it cannot reach your inbox. With attachments
+on, "deleted after `retention_days`" stops being true unless your mail retention
+matches it. Your consent text promises deletion on request, so either leave this
+off, or set a matching mailbox retention policy and handle deletion requests in
+both places.
+
+#### D. RPC surface
+
+`SECURITY DEFINER`, and `REVOKE`d from `public`, `anon` and `authenticated` — so
+they are reachable only with the service key, from the server.
+
+| Function | Use from the portal |
+|---|---|
+| `backfill_ai_queue(slug default null)` | ✅ manual button, with confirmation |
+| `purge_expired_applications(days)` | ⚠️ destructive; normally leave to `maintenance` |
+| `expire_stale_ai_queue(days)` | ✅ safe housekeeping |
+| `storage_used_bytes()` | ✅ dashboard gauge |
+| `keepalive()` | ✅ safe; already in `maintenance` |
+| `get_config()` | ✅ read config |
+| `apply_to_job(slug, data)` | ❌ never — it is the public form's path |
+| `attach_resume(...)` | ❌ never |
+| `claim_ai_batch(...)` | ❌ never — leases rows; calling it outside the score cron strands them until the lease expires |
+| `reserve_global_slot(...)` · `bump_counter(...)` · `count_recent(...)` | ❌ never — rate-limiter internals |
+
+---
+
+#### E. Things that must never be in the portal
+
+- The **service key**, `CRON_SECRET`, `FORM_TOKEN_SECRET`, `IP_HASH_SALT` or any
+  provider key in client-side code, in a response body, or in a URL.
+- **Raw IPs.** Only `ip_hash` is stored, and it is `sha256(ip + IP_HASH_SALT)`.
+  There is nothing to display and no way back. Rotating `IP_HASH_SALT`
+  invalidates every existing hash, including `config.blocked_ip_hashes`.
+- **A public resume URL.** Always a short-lived signed URL, generated server-side.
+  The bucket is private and must stay private.
+- **Editing `application_count` by hand.** `apply_to_job()` maintains it atomically
+  under a row lock. Writing it directly races with live submissions. To reopen a
+  full role, raise `max_applications`.
+- **Editing `reference`, `ip_hash`, `consent_version` or `created_at`.** They are
+  the audit record.
+- **A bulk PII export without an audit entry.** Applications hold names, emails,
+  phone numbers and CVs, under DPDP Act 2023 consent for evaluating one role.
 
 ### API surface it would need
 

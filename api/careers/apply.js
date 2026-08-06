@@ -341,12 +341,21 @@ module.exports = async (req, res) => {
     const appForEmail = Object.assign({}, clean, { reference, resume_status: resumeStatus });
     try {
       const mail = buildApplicationAlert(appForEmail, job, config);
+
+      // The PDF is still in memory from step 14, so attaching it costs no
+      // extra I/O on the request path. Only when the upload actually succeeded
+      // — attaching a file we failed to store would be a lie.
+      const attachments = (config.email_attach_resume === true && resume && resumeStatus === 'ok')
+        ? [{ filename: resume.filename || `${reference}.pdf`, content: resume.buffer }]
+        : undefined;
+
       const sent = await sendEmail({
         to: config.notify_email_to,
         from: config.notify_email_from,
         replyTo: clean.email,
         subject: mail.subject,
         html: mail.html,
+        attachments,
       });
       // A failed inline send must land on 'pending', NOT 'failed'.
       // cron/notify.js only ever selects notify_status='pending', and it owns

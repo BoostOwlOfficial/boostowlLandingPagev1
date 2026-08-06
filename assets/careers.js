@@ -1415,7 +1415,10 @@
       </div>`;
     panel.hidden = false;
     panel.focus();
-    panel.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    // The panel now replaces the wizard in place, so scroll the way every
+    // other view change does. scrollIntoView here left the page mid-scroll
+    // at whatever depth the form happened to end at.
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     const b = $('#browse-more');
     if (b) b.addEventListener('click', () => { resetApplication(); closeRole(); });

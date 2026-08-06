@@ -12,7 +12,7 @@
 'use strict';
 
 const { getConfig } = require('../_lib/config');
-const { select, update } = require('../_lib/supabase');
+const { select, update, downloadResume } = require('../_lib/supabase');
 const { isAuthorizedCron } = require('../_lib/security');
 const { sendEmail, buildApplicationAlert } = require('../_lib/email');
 const { handlePreflight, ok, fail } = require('../_lib/respond');
@@ -29,7 +29,8 @@ async function runNotify(config) {
   const rows = await select('applications', {
     select: 'id,reference,job_id,job_slug,full_name,email,phone_e164,location_city,' +
             'experience_bucket,notice_period,expected_ctc_band,source,linkedin_url,' +
-            'portfolio_url,github_url,why_boostowl,custom_answers,resume_status,notify_attempts',
+            'portfolio_url,github_url,why_boostowl,custom_answers,resume_status,notify_attempts,' +
+            'resume_path,resume_original_filename',
     filters: { notify_status: 'eq.pending' },
     order: 'created_at.asc',
     limit: BATCH,
@@ -57,12 +58,27 @@ async function runNotify(config) {
 
     try {
       const mail = buildApplicationAlert(app, job, config);
+
+      // Unlike apply.js the PDF is not in memory here, so it is fetched back
+      // out of storage. A download failure must not block the alert — the
+      // whole point of this retry is that somebody hears about the candidate.
+      let attachments;
+      if (config.email_attach_resume === true && app.resume_status === 'ok' && app.resume_path) {
+        try {
+          const buf = await downloadResume(app.resume_path);
+          attachments = [{ filename: app.resume_original_filename || `${app.reference}.pdf`, content: buf }];
+        } catch (err) {
+          console.warn('[notify] could not fetch resume for', app.reference, '- sending without it:', err.message);
+        }
+      }
+
       const sent = await sendEmail({
         to: config.notify_email_to,
         from: config.notify_email_from,
         replyTo: app.email,
         subject: mail.subject,
         html: mail.html,
+        attachments,
       });
 
       await update('applications', { id: `eq.${app.id}` }, {

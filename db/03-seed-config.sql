@@ -95,6 +95,21 @@ insert into config (key, value, description) values
 ('notify_email_enabled',     'true'::jsonb,  'Email you when an application arrives.'),
 ('notify_email_to',          '"admin@boostowl.io"'::jsonb, 'Recipient for new-application alerts.'),
 ('notify_email_from',        '"careers@boostowl.io"'::jsonb, 'Verified Resend sender.'),
+('email_alert_subject', '""'::jsonb,
+ 'Subject for the internal new-application alert. Blank = built-in default. Supports {{placeholders}} - see CAREERS-ADMIN.md.'),
+
+('email_alert_html', '""'::jsonb,
+ 'HTML body for the internal alert. Blank = the built-in template in api/careers/_lib/email.js. Admin-authored HTML is rendered as-is; applicant values are always HTML-escaped before substitution.'),
+
+('email_ack_subject', '""'::jsonb,
+ 'Subject for the candidate acknowledgement. Only sent when notify_ack_candidate is true. Blank = built-in default.'),
+
+('email_ack_html', '""'::jsonb,
+ 'HTML body for the candidate acknowledgement. Blank = built-in default.'),
+
+('email_attach_resume', 'false'::jsonb,
+ 'Attach the candidate CV to the internal alert email. OFF by default: it copies applicant PII into a mailbox that purge_expired_applications() cannot reach, so retention no longer fully deletes them. Turn on only if your inbox retention matches your stated policy.'),
+
 ('notify_ack_candidate',     'false'::jsonb, 'Also send the applicant a confirmation email.'),
 ('alert_email_to',           '"admin@boostowl.io"'::jsonb, 'Operational alerts: caps tripped, storage full, budget exhausted.'),
 

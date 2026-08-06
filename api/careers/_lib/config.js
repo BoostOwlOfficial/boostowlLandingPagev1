@@ -48,7 +48,10 @@ const DEFAULTS = {
   applications_open:        true,
   maintenance_message:      'We are not accepting applications right now. Please check back soon.',
   resume_upload_enabled:    true,
-  resume_required:          false,
+  // NB: there is no global `resume_required`. Whether a CV is mandatory is a
+  // PER-ROLE decision — jobs.resume_mode ('required'|'optional'|'disabled') —
+  // read in apply.js. A global key here was dead weight that an admin portal
+  // would have rendered as a working toggle.
   resume_max_bytes:         2 * 1024 * 1024,
   turnstile_enabled:        true,
   turnstile_fail_open:      false,
@@ -79,6 +82,19 @@ const DEFAULTS = {
   notify_email_to:          'admin@boostowl.io',
   notify_email_from:        'careers@boostowl.io',
   notify_ack_candidate:     false,
+
+  // Email templates. Blank = use the built-in HTML in _lib/email.js, so a
+  // cleared template degrades to the default rather than sending an empty mail.
+  // Placeholders are {{reference}}, {{job_title}}, {{full_name}}, ... see
+  // email.js TEMPLATE_VARS and CAREERS-ADMIN.md §6.
+  email_alert_subject:      '',
+  email_alert_html:         '',
+  email_ack_subject:        '',
+  email_ack_html:           '',
+
+  // Attach the CV to the internal alert. OFF by default on purpose: it copies
+  // applicant PII into a mailbox that the retention purge cannot reach.
+  email_attach_resume:      false,
   alert_email_to:           'admin@boostowl.io',
   retention_days:           365,
   consent_version:          'unversioned',

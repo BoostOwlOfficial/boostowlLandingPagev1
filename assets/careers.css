@@ -72,6 +72,16 @@
 
 /* =====================================================================
    §2  RESET & LAYOUT
+   NOTE: the [hidden] rule below is load-bearing, not boilerplate. The UA
+   stylesheet's `[hidden]{display:none}` loses to ANY author rule that sets
+   display — so `.split-cols{display:grid}` kept #wizard on screen after a
+   successful submit, and the success panel rendered underneath it instead of
+   in its place. #form-notice (.notice{display:flex}) and #step-back
+   (.btn{display:inline-flex}) had the same defect. Never remove this.
+   ===================================================================== */
+
+[hidden]{ display:none !important; }
+
    ===================================================================== */
 *,*::before,*::after{ box-sizing:border-box; }
 html,body{ margin:0; padding:0; }
@@ -721,7 +731,6 @@ footer{
        because the mock only ever draws the happy path. --------------- */
 .closing-col{ min-width:0; }
 
-.step-body[hidden]{ display:none; }
 
 .error-slot:empty{ display:none; }
 .error-slot{ margin-top:2px; }
