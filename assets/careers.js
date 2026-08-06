@@ -149,6 +149,47 @@
   }
 
   /**
+   * Re-read the board after a successful application, so the list reflects the
+   * row that was just written: one fewer spot, and the role closed outright if
+   * that submission was the one that hit max_applications.
+   *
+   * Deliberately narrow — it re-renders the LIST only. The success panel and
+   * the view the user is looking at are left alone, because this runs while
+   * they are reading their reference number.
+   *
+   * Never throws: a stale count is a cosmetic problem, and an exception here
+   * would surface as an error on a screen that just said "Application received".
+   */
+  async function refreshJobs() {
+    try {
+      const body = await fetchCareers();
+
+      state.data = Object.assign({}, state.data, body);
+      state.jobs = Array.isArray(body.jobs) ? body.jobs : [];
+      state.jobBySlug = new Map(state.jobs.map((j) => [j.slug, j]));
+      state.tokenIssuedAt = Date.now();
+      state.lastRefreshAt = Date.now();
+
+      // Keep the open role's own flags current, so going Back to it shows
+      // "Filled" and hides the apply card rather than offering a form that
+      // would now be rejected server-side.
+      if (state.selected) {
+        const fresh = state.jobBySlug.get(state.selected.slug);
+        if (fresh) state.selected = fresh;
+      }
+
+      renderHeroStats();
+      renderDeptFilters();
+      renderJobList();
+      if (state.selected && state.view === 'detail') renderJobDetail(state.selected);
+      return true;
+    } catch (err) {
+      console.warn('[careers] could not refresh roles after submit:', err.message);
+      return false;
+    }
+  }
+
+  /**
    * Re-issue a form token. GET /api/careers/jobs is the only issuer.
    * Updates the token and availability flags ONLY — it must never touch
    * #fields-mount or the user loses what they have typed.
@@ -1422,6 +1463,11 @@
 
     const b = $('#browse-more');
     if (b) b.addEventListener('click', () => { resetApplication(); closeRole(); });
+
+    // Fire and forget: the counts behind this panel are now one application
+    // out of date. By the time they press "Browse other roles" the list has
+    // been rebuilt, including this role closing if it just hit its cap.
+    refreshJobs();
   }
 
   function resetApplication() {
@@ -1437,7 +1483,14 @@
   /* =====================================================================
      §10  TOKEN LIFECYCLE, EVENTS & BOOT
      ===================================================================== */
-  function openRole(slug, triggerEl) {
+  /**
+   * @param push  false when the URL ALREADY points at this role — i.e. a direct
+   *              load of /careers?role=x, or a popstate. Pushing in those cases
+   *              created a second entry with an identical URL, so history.back()
+   *              landed on the same ?role= and popstate simply re-opened it. The
+   *              symptom was "All roles" doing nothing, but only after a reload.
+   */
+  function openRole(slug, triggerEl, push) {
     const job = state.jobBySlug.get(slug);
     if (!job) return;
 
@@ -1451,7 +1504,9 @@
     renderJobDetail(job);
     setView('detail');
 
-    history.pushState({ role: slug }, '', '?role=' + encodeURIComponent(slug));
+    if (push !== false) {
+      history.pushState({ role: slug }, '', '?role=' + encodeURIComponent(slug));
+    }
     state.lastFocused = triggerEl || null;
     $('#back-to-roles').focus();
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1498,7 +1553,14 @@
       openRole(card.dataset.slug, card);
     });
 
-    $('#back-to-roles').addEventListener('click', () => { history.back(); });
+    // Explicit, not history.back(): on a direct load of /careers?role=x there is
+    // no earlier in-page entry to go back TO, so back() either did nothing or
+    // left the site entirely. Closing the role and rewriting the URL works from
+    // any entry point, and the browser Back button still returns to the role.
+    $('#back-to-roles').addEventListener('click', () => {
+      closeRole();
+      history.pushState({}, '', location.pathname);
+    });
     $('#back-to-detail').addEventListener('click', backToDetail);
     $('#start-apply').addEventListener('click', startApply);
     $('#step-back').addEventListener('click', () => {
@@ -1575,7 +1637,7 @@
 
     window.addEventListener('popstate', () => {
       const slug = new URLSearchParams(location.search).get('role');
-      if (slug && state.jobBySlug.has(slug)) openRole(slug);
+      if (slug && state.jobBySlug.has(slug)) openRole(slug, null, false);
       else closeRole();
     });
 
@@ -1674,7 +1736,7 @@
         }
 
         const slug = new URLSearchParams(location.search).get('role');
-        if (slug && state.jobBySlug.has(slug)) openRole(slug);
+        if (slug && state.jobBySlug.has(slug)) openRole(slug, null, false);
       }
     } catch (err) {
       console.error('[careers] boot failed:', err.message);
